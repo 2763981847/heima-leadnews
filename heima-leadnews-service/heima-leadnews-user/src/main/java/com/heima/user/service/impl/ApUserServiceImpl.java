@@ -11,6 +11,7 @@ import com.heima.model.user.entity.ApUser;
 import com.heima.model.user.vo.LoginUserVo;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
+import com.heima.user.util.UserUtils;
 import com.heima.utils.common.AppJwtUtil;
 import com.heima.utils.common.MD5Utils;
 import org.apache.commons.beanutils.BeanUtils;
@@ -51,7 +52,7 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser>
         // 校验密码
         String salt = apUser.getSalt();
         String encryptedPassword = apUser.getPassword();
-        if (!DigestUtils.md5DigestAsHex((salt + password).getBytes()).equals(encryptedPassword)) {
+        if (!UserUtils.getEncryptPassword(password, salt).equals(encryptedPassword)) {
             // 密码错误
             return ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
         }
