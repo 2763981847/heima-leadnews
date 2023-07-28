@@ -6,7 +6,7 @@
         <option name="generateConfig">
           <GenerateConfig>
             <option name="annotationType" value="MYBATIS_PLUS3" />
-            <option name="basePackage" value="com.heima.model.user" />
+            <option name="basePackage" value="com.heima.model.article" />
             <option name="basePath" value="src/main/java" />
             <option name="classNameStrategy" value="camel" />
             <option name="encoding" value="UTF-8" />
@@ -27,8 +27,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Mapper" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-user" />
-                  <option name="packageName" value="com.heima.user.mapper" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-article" />
+                  <option name="packageName" value="com.heima.article.mapper" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
                   <option name="basePath" value="src/main/resources" />
@@ -37,7 +37,7 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Mapper" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.xml" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-user" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-article" />
                   <option name="packageName" value="mapper" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
@@ -47,8 +47,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}ServiceImpl" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}ServiceImpl.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-user" />
-                  <option name="packageName" value="com.heima.user.service.impl" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-article" />
+                  <option name="packageName" value="com.heima.article.service.impl" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
                   <option name="basePath" value="${domain.basePath}" />
@@ -57,8 +57,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Service" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Service.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-user" />
-                  <option name="packageName" value="com.heima.user.service" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-article" />
+                  <option name="packageName" value="com.heima.article.service" />
                 </ModuleInfoGo>
               </list>
             </option>
@@ -69,8 +69,16 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="ApUser" />
-                  <option name="tableName" value="ap_user" />
+                  <option name="className" value="ApArticle" />
+                  <option name="tableName" value="ap_article" />
+                </TableUIInfo>
+                <TableUIInfo>
+                  <option name="className" value="ApArticleContent" />
+                  <option name="tableName" value="ap_article_content" />
+                </TableUIInfo>
+                <TableUIInfo>
+                  <option name="className" value="ApArticleConfig" />
+                  <option name="tableName" value="ap_article_config" />
                 </TableUIInfo>
               </list>
             </option>
