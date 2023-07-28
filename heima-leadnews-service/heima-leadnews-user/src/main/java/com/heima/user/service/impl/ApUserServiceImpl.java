@@ -12,13 +12,9 @@ import com.heima.model.user.vo.LoginUserVo;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
 import com.heima.user.util.UserUtils;
-import com.heima.utils.common.AppJwtUtil;
-import com.heima.utils.common.MD5Utils;
-import org.apache.commons.beanutils.BeanUtils;
+import com.heima.util.common.AppJwtUtil;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
-import javax.validation.constraints.Digits;
 import java.util.HashMap;
 import java.util.Map;
 

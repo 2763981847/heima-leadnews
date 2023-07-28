@@ -1,18 +1,18 @@
 package com.heima.model.user.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
 import lombok.Data;
 
 /**
  * APP用户信息表
+ *
  * @TableName ap_user
  */
-@TableName(value ="ap_user")
+@TableName(value = "ap_user")
 @Data
 public class ApUser implements Serializable {
     /**
@@ -53,15 +53,15 @@ public class ApUser implements Serializable {
 
     /**
      * 0 男
-            1 女
-            2 未知
+     * 1 女
+     * 2 未知
      */
     @TableField(value = "sex")
     private Integer sex;
 
     /**
      * 0 未
-            1 是
+     * 1 是
      */
     @TableField(value = "is_certification")
     private Integer isCertification;
@@ -74,15 +74,15 @@ public class ApUser implements Serializable {
 
     /**
      * 0正常
-            1锁定
+     * 1锁定
      */
     @TableField(value = "status")
     private Integer status;
 
     /**
      * 0 普通用户
-            1 自媒体人
-            2 大V
+     * 1 自媒体人
+     * 2 大V
      */
     @TableField(value = "flag")
     private Integer flag;
@@ -90,7 +90,7 @@ public class ApUser implements Serializable {
     /**
      * 注册时间
      */
-    @TableField(value = "created_time")
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 
     @TableField(exist = false)

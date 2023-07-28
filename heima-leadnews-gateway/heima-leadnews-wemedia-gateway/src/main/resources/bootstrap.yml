@@ -6,7 +6,8 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.200.130:8848
+        server-addr: ${VPS_HOST}:8848
       config:
-        server-addr: 192.168.200.130:8848
-        file-extension: yml
+        server-addr: ${VPS_HOST}:8848
+        file-extension: yaml
+        group: leadnews

@@ -4,6 +4,8 @@ import com.heima.app.gateway.util.AppJwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -17,7 +19,7 @@ import reactor.core.publisher.Mono;
  * @since 2023/7/25
  */
 @Component
-public class AuthorizeFilter implements GlobalFilter {
+public class AuthorizeFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -46,5 +48,10 @@ public class AuthorizeFilter implements GlobalFilter {
         }
         // 6.如果令牌有效，则放行
         return chain.filter(exchange);
+    }
+
+    @Override
+    public int getOrder() {
+        return 0;
     }
 }
