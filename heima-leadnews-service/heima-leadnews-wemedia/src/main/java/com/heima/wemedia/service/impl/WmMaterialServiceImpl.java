@@ -1,11 +1,12 @@
 package com.heima.wemedia.service.impl;
 
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.file.service.FileStorageService;
-import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.dto.PageResponseResult;
+import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.wemedia.dto.WmMaterialDto;
 import com.heima.model.wemedia.entity.WmMaterial;
 import com.heima.model.wemedia.entity.WmUser;
 import com.heima.util.thread.WmThreadLocalUtil;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -58,6 +60,24 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         this.save(wmMaterial);
         //4.返回结果
         return ResponseResult.okResult(wmMaterial);
+    }
+
+    @Override
+    public ResponseResult<?> listMaterials(WmMaterialDto wmMaterialDto) {
+        wmMaterialDto.checkParam();
+        Integer size = wmMaterialDto.getSize();
+        Integer page = wmMaterialDto.getPage();
+        Short isCollection = wmMaterialDto.getIsCollection();
+        Page<WmMaterial> materialPage = this.lambdaQuery()
+                .eq(isCollection != null && isCollection == 1, WmMaterial::getIsCollection, 1)
+                .eq(WmMaterial::getUserId, WmThreadLocalUtil.getUser().getId())
+                .orderByDesc(WmMaterial::getCreatedTime)
+                .page(new Page<>(page, size));
+        return new PageResponseResult<>(
+                page,
+                size,
+                (int) materialPage.getTotal(),
+                materialPage.getRecords());
     }
 }
 

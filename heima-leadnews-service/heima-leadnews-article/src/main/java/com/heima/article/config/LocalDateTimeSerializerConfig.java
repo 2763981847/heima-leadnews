@@ -1,4 +1,4 @@
-package com.heima.common.config;
+package com.heima.article.config;
 
 
 import com.fasterxml.jackson.core.JsonGenerator;

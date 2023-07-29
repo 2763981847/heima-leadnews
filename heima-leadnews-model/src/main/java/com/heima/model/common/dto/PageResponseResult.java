@@ -1,8 +1,11 @@
-package com.heima.model.common.dtos;
+package com.heima.model.common.dto;
 
 import java.io.Serializable;
 
-public class PageResponseResult extends ResponseResult implements Serializable {
+/**
+ * @author Oreki
+ */
+public class PageResponseResult<T> extends ResponseResult<T> implements Serializable {
     private Integer currentPage;
     private Integer size;
     private Integer total;
@@ -13,8 +16,14 @@ public class PageResponseResult extends ResponseResult implements Serializable {
         this.total = total;
     }
 
-    public PageResponseResult() {
+    public PageResponseResult(Integer currentPage, Integer size, Integer total, T data) {
+        this.currentPage = currentPage;
+        this.size = size;
+        this.total = total;
+        this.setData(data);
+    }
 
+    public PageResponseResult() {
     }
 
 

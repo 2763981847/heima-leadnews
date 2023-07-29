@@ -1,11 +1,9 @@
 package com.heima.user.service;
 
-import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.user.dto.LoginDto;
 import com.heima.model.user.entity.ApUser;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.Map;
 
 /**
  * @author Oreki

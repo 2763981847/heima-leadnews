@@ -4,7 +4,7 @@ import com.heima.article.service.ApArticleService;
 import com.heima.common.constants.ArticleConstants;
 import com.heima.model.article.dto.ArticleHomeDto;
 import com.heima.model.article.entity.ApArticle;
-import com.heima.model.common.dtos.ResponseResult;
+import com.heima.model.common.dto.ResponseResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

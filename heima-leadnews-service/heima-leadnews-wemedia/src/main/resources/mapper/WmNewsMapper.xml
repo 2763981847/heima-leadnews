@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.heima.wemedia.mapper.WmNewsMapper">
+
+    <resultMap id="BaseResultMap" type="com.heima.model.wemedia.entity.WmNews">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="userId" column="user_id" jdbcType="INTEGER"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="channelId" column="channel_id" jdbcType="INTEGER"/>
+            <result property="labels" column="labels" jdbcType="VARCHAR"/>
+            <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+            <result property="submitedTime" column="submited_time" jdbcType="TIMESTAMP"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="publishTime" column="publish_time" jdbcType="TIMESTAMP"/>
+            <result property="reason" column="reason" jdbcType="VARCHAR"/>
+            <result property="articleId" column="article_id" jdbcType="BIGINT"/>
+            <result property="images" column="images" jdbcType="VARCHAR"/>
+            <result property="enable" column="enable" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,title,
+        content,type,channel_id,
+        labels,created_time,submited_time,
+        status,publish_time,reason,
+        article_id,images,enable
+    </sql>
+</mapper>
