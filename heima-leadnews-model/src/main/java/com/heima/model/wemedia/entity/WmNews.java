@@ -1,9 +1,6 @@
 package com.heima.model.wemedia.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -50,7 +47,7 @@ public class WmNews implements Serializable {
      * 3 多图文章
      */
     @TableField(value = "type")
-    private Integer type;
+    private Short type;
 
     /**
      * 图文频道ID
@@ -67,7 +64,7 @@ public class WmNews implements Serializable {
     /**
      * 创建时间
      */
-    @TableField(value = "created_time")
+    @TableField(value = "created_time", fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 
     /**
@@ -87,7 +84,7 @@ public class WmNews implements Serializable {
      * 9 已发布
      */
     @TableField(value = "status")
-    private Integer status;
+    private Short status;
 
     /**
      * 定时发布时间，不定时则为空
@@ -123,13 +120,13 @@ public class WmNews implements Serializable {
     @Alias("WmNewsStatus")
     public enum Status {
         NORMAL((short) 0), SUBMIT((short) 1), FAIL((short) 2), ADMIN_AUTH((short) 3), ADMIN_SUCCESS((short) 4), SUCCESS((short) 8), PUBLISHED((short) 9);
-        final short code;
+        final Short code;
 
         Status(short code) {
             this.code = code;
         }
 
-        public short getCode() {
+        public Short getCode() {
             return this.code;
         }
     }

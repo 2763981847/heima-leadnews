@@ -3,6 +3,7 @@ package com.heima.wemedia.service;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.wemedia.dto.WmNewsDto;
 import com.heima.model.wemedia.dto.WmNewsPageReqDto;
+import com.heima.model.wemedia.dto.WmNewsUpDownDto;
 import com.heima.model.wemedia.entity.WmNews;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -18,4 +19,8 @@ public interface WmNewsService extends IService<WmNews> {
     ResponseResult<List<WmNews>> listNews(WmNewsPageReqDto wmNewsPageReqDto);
 
     ResponseResult<?> submitNews(WmNewsDto dto);
+
+    ResponseResult<?> deleteNews(Integer id);
+
+    ResponseResult<?> downOrUp(WmNewsUpDownDto wmNewsUpDownDto);
 }

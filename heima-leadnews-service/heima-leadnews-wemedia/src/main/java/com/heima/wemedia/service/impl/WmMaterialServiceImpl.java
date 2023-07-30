@@ -8,16 +8,21 @@ import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dto.WmMaterialDto;
 import com.heima.model.wemedia.entity.WmMaterial;
+import com.heima.model.wemedia.entity.WmNewsMaterial;
 import com.heima.model.wemedia.entity.WmUser;
 import com.heima.util.thread.WmThreadLocalUtil;
 import com.heima.wemedia.service.WmMaterialService;
 import com.heima.wemedia.mapper.WmMaterialMapper;
+import com.heima.wemedia.service.WmNewsMaterialService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,6 +36,9 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         implements WmMaterialService {
     @Resource
     private FileStorageService fileStorageService;
+
+    @Resource
+    private WmNewsMaterialService wmNewsMaterialService;
 
     @Override
     public ResponseResult<?> uploadPicture(MultipartFile multipartFile) {
@@ -78,6 +86,64 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
                 size,
                 (int) materialPage.getTotal(),
                 materialPage.getRecords());
+    }
+
+    @Override
+    public List<WmMaterial> listMaterialsByUrl(List<String> urlList) {
+        if (CollectionUtils.isEmpty(urlList)) {
+            return Collections.emptyList();
+        }
+        return this.lambdaQuery()
+                .in(WmMaterial::getUrl, urlList)
+                .list();
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult<?> delete(Integer id) {
+        // 检查参数
+        if(id == null || id < 1) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        WmMaterial wmMaterial = this.getById(id);
+        if (wmMaterial == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        // 判断图片是否被引用
+        int count = wmNewsMaterialService.lambdaQuery()
+                .eq(WmNewsMaterial::getMaterialId, id)
+                .count();
+        if (count > 0) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"图片被引用，不能删除");
+        }
+        // 删除图片
+        boolean success = this.removeById(id);
+        if (!success) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"删除图片失败");
+        }
+        // 删除minIO中的图片
+        fileStorageService.delete(wmMaterial.getUrl());
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public ResponseResult<?> collect(Integer id) {
+        return collectHelper(id, 1);
+    }
+
+    @Override
+    public ResponseResult<?> cancelCollect(Integer id) {
+        return collectHelper(id, 0);
+    }
+
+    private ResponseResult<?> collectHelper(Integer id,int isCollection){
+        if (id == null || id < 1) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        boolean success = this.lambdaUpdate().eq(WmMaterial::getId, id)
+                .set(WmMaterial::getIsCollection, isCollection)
+                .update();
+        return success ? ResponseResult.okResult(AppHttpCodeEnum.SUCCESS) : ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR);
     }
 }
 
