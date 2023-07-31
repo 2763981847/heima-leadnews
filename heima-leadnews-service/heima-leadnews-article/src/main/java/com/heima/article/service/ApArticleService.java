@@ -1,8 +1,10 @@
 package com.heima.article.service;
 
+import com.heima.model.article.dto.ArticleDto;
 import com.heima.model.article.dto.ArticleHomeDto;
 import com.heima.model.article.entity.ApArticle;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.heima.model.common.dto.ResponseResult;
 
 import java.util.List;
 
@@ -20,4 +22,6 @@ public interface ApArticleService extends IService<ApArticle> {
      * @return
      */
     List<ApArticle> load(Short loadType, ArticleHomeDto dto);
+
+    ResponseResult<?> saveArticle(ArticleDto dto);
 }

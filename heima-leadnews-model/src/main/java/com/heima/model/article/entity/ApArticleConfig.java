@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * APP已发布文章配置表
@@ -13,11 +14,21 @@ import lombok.Data;
  */
 @TableName(value ="ap_article_config")
 @Data
+@NoArgsConstructor
 public class ApArticleConfig implements Serializable {
+
+
+    public ApArticleConfig(Long articleId){
+        this.articleId = articleId;
+        this.isComment = 1;
+        this.isForward = 1;
+        this.isDelete = 0;
+        this.isDown = 0;
+    }
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**

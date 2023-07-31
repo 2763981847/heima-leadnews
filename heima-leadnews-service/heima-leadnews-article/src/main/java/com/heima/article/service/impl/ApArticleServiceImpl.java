@@ -1,13 +1,23 @@
 package com.heima.article.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.article.service.ApArticleConfigService;
+import com.heima.article.service.ApArticleContentService;
 import com.heima.common.constants.ArticleConstants;
+import com.heima.model.article.dto.ArticleDto;
 import com.heima.model.article.dto.ArticleHomeDto;
 import com.heima.model.article.entity.ApArticle;
 import com.heima.article.service.ApArticleService;
 import com.heima.article.mapper.ApArticleMapper;
+import com.heima.model.article.entity.ApArticleConfig;
+import com.heima.model.article.entity.ApArticleContent;
+import com.heima.model.common.dto.ResponseResult;
+import com.heima.model.common.enums.AppHttpCodeEnum;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +29,12 @@ import java.util.List;
 @Service
 public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle>
         implements ApArticleService {
+
+    @Resource
+    private ApArticleContentService apArticleContentService;
+
+    @Resource
+    private ApArticleConfigService apArticleConfigService;
 
     @Override
     public List<ApArticle> load(Short loadType, ArticleHomeDto dto) {
@@ -52,6 +68,43 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         // 2.根据参数查询文章列表
         List<ApArticle> apArticles = baseMapper.loadArticleList(dto, loadType);
         return apArticles;
+    }
+
+    @Override
+    @Transactional
+    public ResponseResult<?> saveArticle(ArticleDto dto) {
+        // 1.参数校验
+        if (dto == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        // 2.拷贝属性到ApArticle对象
+        ApArticle apArticle = BeanUtil.copyProperties(dto, ApArticle.class);
+        // 3.判断是否存在id，如果存在则更新，否则新增
+        if (apArticle.getId() != null) {
+            // 更新
+            // 更新文章表
+            boolean success = this.updateById(apArticle);
+            if (!success) {
+                return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文章不存在");
+            }
+            // 更新文章内容表
+            apArticleContentService.lambdaUpdate()
+                    .eq(ApArticleContent::getArticleId, apArticle.getId())
+                    .set(ApArticleContent::getContent, dto.getContent())
+                    .update();
+        } else {
+            // 新增
+            // 1.保存文章表
+            this.save(apArticle);
+            // 2.保存文章配置表
+            ApArticleConfig apArticleConfig = new ApArticleConfig(apArticle.getId());
+            apArticleConfigService.save(apArticleConfig);
+            // 3.保存文章内容表
+            ApArticleContent apArticleContent = new ApArticleContent(apArticle.getId(), dto.getContent());
+            apArticleContentService.save(apArticleContent);
+        }
+        // 4.返回文章id
+        return ResponseResult.okResult(apArticle.getId());
     }
 }
 

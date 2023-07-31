@@ -14,10 +14,16 @@ import lombok.Data;
 @TableName(value ="ap_article_content")
 @Data
 public class ApArticleContent implements Serializable {
+
+    public ApArticleContent(Long articleId, String content) {
+        this.articleId = articleId;
+        this.content = content;
+    }
+
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**

@@ -8,6 +8,8 @@ public class WemediaConstants {
 
     public static final String WM_NEWS_TYPE_IMAGE = "image";
 
+    public static final String WM_NEWS_TYPE_TEXT = "text";
+
     public static final Short WM_NEWS_NONE_IMAGE = 0;
     public static final Short WM_NEWS_SINGLE_IMAGE = 1;
     public static final Short WM_NEWS_MANY_IMAGE = 3;

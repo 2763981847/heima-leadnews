@@ -2,6 +2,7 @@ package com.heima.article.controller.v1;
 
 import com.heima.article.service.ApArticleService;
 import com.heima.common.constants.ArticleConstants;
+import com.heima.model.article.dto.ArticleDto;
 import com.heima.model.article.dto.ArticleHomeDto;
 import com.heima.model.article.entity.ApArticle;
 import com.heima.model.common.dto.ResponseResult;
@@ -40,5 +41,10 @@ public class ArticleHomeController {
     public ResponseResult<?> loadNew(@RequestBody ArticleHomeDto dto) {
         List<ApArticle> apArticles = apArticleService.load(ArticleConstants.LOAD_NEW, dto);
         return ResponseResult.okResult(apArticles);
+    }
+
+    @PostMapping("/save")
+    public ResponseResult<?> saveArticle(@RequestBody ArticleDto dto) {
+        return apArticleService.saveArticle(dto);
     }
 }
