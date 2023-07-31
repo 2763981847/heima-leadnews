@@ -11,3 +11,6 @@ spring:
         server-addr: ${VPS_HOST}:8848
         file-extension: yaml
         group: leadnews
+tess4j:
+  data-path: E:\coding\Java\project\heima-leadnews\heima-leadnews-service\heima-leadnews-wemedia\src\main\resources
+  language: chi_sim

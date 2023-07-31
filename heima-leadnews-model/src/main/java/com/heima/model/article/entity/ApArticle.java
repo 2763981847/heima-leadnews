@@ -133,7 +133,7 @@ public class ApArticle implements Serializable {
     /**
      * 发布时间
      */
-    @TableField(value = "publish_time")
+    @TableField(value = "publish_time",fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime publishTime;
 
     /**

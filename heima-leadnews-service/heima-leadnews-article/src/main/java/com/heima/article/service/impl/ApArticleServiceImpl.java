@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.service.ApArticleConfigService;
 import com.heima.article.service.ApArticleContentService;
+import com.heima.article.service.ApArticleFreemarkerService;
 import com.heima.common.constants.ArticleConstants;
 import com.heima.model.article.dto.ArticleDto;
 import com.heima.model.article.dto.ArticleHomeDto;
@@ -35,6 +36,9 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
 
     @Resource
     private ApArticleConfigService apArticleConfigService;
+
+    @Resource
+    private ApArticleFreemarkerService apArticleFreemarkerService;
 
     @Override
     public List<ApArticle> load(Short loadType, ArticleHomeDto dto) {
@@ -103,6 +107,7 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
             ApArticleContent apArticleContent = new ApArticleContent(apArticle.getId(), dto.getContent());
             apArticleContentService.save(apArticleContent);
         }
+        apArticleFreemarkerService.buildArticleToMinIO(apArticle, dto.getContent());
         // 4.返回文章id
         return ResponseResult.okResult(apArticle.getId());
     }

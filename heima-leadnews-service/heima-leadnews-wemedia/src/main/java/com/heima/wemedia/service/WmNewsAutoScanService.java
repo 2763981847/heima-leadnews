@@ -10,5 +10,5 @@ public interface WmNewsAutoScanService {
      *
      * @param id 自媒体文章id
      */
-    void autoScanWmNews(Integer id) throws Exception;
+    void autoScanWmNews(Integer id) ;
 }

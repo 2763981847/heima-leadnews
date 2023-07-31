@@ -20,10 +20,12 @@ import com.heima.model.wemedia.entity.WmNews;
 import com.heima.model.wemedia.entity.WmNewsMaterial;
 import com.heima.util.thread.WmThreadLocalUtil;
 import com.heima.wemedia.service.WmMaterialService;
+import com.heima.wemedia.service.WmNewsAutoScanService;
 import com.heima.wemedia.service.WmNewsMaterialService;
 import com.heima.wemedia.service.WmNewsService;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import net.bytebuddy.implementation.bytecode.Throw;
+import net.sourceforge.tess4j.Tesseract;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -49,6 +51,10 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
 
     @Resource
     private WmMaterialService wmMaterialService;
+
+
+    @Resource
+    private WmNewsAutoScanService wmNewsAutoScanService;
 
     @Override
     public ResponseResult<List<WmNews>> listNews(WmNewsPageReqDto wmNewsPageReqDto) {
@@ -76,31 +82,34 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
     @Transactional
     public ResponseResult<?> submitNews(WmNewsDto dto) {
         // 参数检验
-        if(dto == null || StrUtil.isBlank(dto.getContent())) {
+        if (dto == null || StrUtil.isBlank(dto.getContent())) {
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
         }
         // 设置文章属性
         List<String> images = dto.getImages();
         WmNews wmNews = BeanUtil.copyProperties(dto, WmNews.class);
         wmNews.setUserId(WmThreadLocalUtil.getUser().getId());
-        wmNews.setImages(images == null?null : String.join(",", images));
+        wmNews.setImages(images == null ? null : String.join(",", images));
         // 封面类型为自动时， type = -1
-        if(WemediaConstants.WM_NEWS_TYPE_AUTO.equals(wmNews.getType())){
+        if (WemediaConstants.WM_NEWS_TYPE_AUTO.equals(wmNews.getType())) {
             wmNews.setType(null);
         }
-        if(dto.getId() == null){
+        if (dto.getId() == null) {
             // 新增文章
             saveNews(wmNews);
-        }else {
+        } else {
             // 修改文章
             updateNews(wmNews);
         }
         // 如果是草稿直接返回
-        if(WmNews.Status.NORMAL.getCode().equals(wmNews.getStatus())){
+        if (WmNews.Status.NORMAL.getCode().equals(wmNews.getStatus())) {
             return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
         }
         // 不是草稿，保存文章图片与素材的关系后返回
-        return saveRelations(dto, wmNews.getId());
+        ResponseResult<?> responseResult = saveRelations(dto, wmNews.getId());
+        // 调用自动审核
+        wmNewsAutoScanService.autoScanWmNews(wmNews.getId());
+        return responseResult;
     }
 
     @Override
@@ -113,11 +122,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         // 查询文章
         WmNews wmNews = getById(id);
         if (wmNews == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST,"文章不存在");
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
         }
         // 判断文章状态
         if (WmNews.Status.PUBLISHED.getCode().equals(wmNews.getStatus())) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"已发布的文章不能删除");
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "已发布的文章不能删除");
         }
         // 删除文章
         removeById(id);
@@ -136,11 +145,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         }
         WmNews wmNews = getById(id);
         if (wmNews == null) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST,"文章不存在");
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
         }
         // 判断文章状态，只有已发布的文章才能上下架
         if (!WmNews.Status.PUBLISHED.getCode().equals(wmNews.getStatus())) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"当前文章不是已发布状态，不能上下架");
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "当前文章不是已发布状态，不能上下架");
         }
         // 上下架文章
         boolean success = this.lambdaUpdate()
@@ -155,36 +164,36 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         // 提取文章内容中的图片
         List<String> contentImages = extractImagesFromContent(dto.getContent());
         // 保存内容图片与素材的关系
-        saveRelationsHelper(contentImages,newsId,WemediaConstants.WM_CONTENT_REFERENCE);
+        saveRelationsHelper(contentImages, newsId, WemediaConstants.WM_CONTENT_REFERENCE);
         // 处理封面图片
-        coverHandler(dto,contentImages,newsId);
+        coverHandler(dto, contentImages, newsId);
         // 保存封面图片与素材的关系
-        saveRelationsHelper(dto.getImages(),newsId,WemediaConstants.WM_COVER_REFERENCE);
+        saveRelationsHelper(dto.getImages(), newsId, WemediaConstants.WM_COVER_REFERENCE);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
     private void coverHandler(WmNewsDto dto, List<String> contentImages, Integer newsId) {
-        List<String> images =dto.getImages();
+        List<String> images = dto.getImages();
         //如果当前封面类型为自动，则设置封面类型的数据
-        if(WemediaConstants.WM_NEWS_TYPE_AUTO.equals(dto.getType())){
+        if (WemediaConstants.WM_NEWS_TYPE_AUTO.equals(dto.getType())) {
             //多图
             images = contentImages.stream().limit(3).collect(Collectors.toList());
-            if(contentImages.size() >= 3){
-                this.lambdaUpdate().eq(WmNews::getId,newsId)
-                        .set(WmNews::getType,WemediaConstants.WM_NEWS_MANY_IMAGE)
-                        .set(WmNews::getImages,String.join(",",images))
+            if (contentImages.size() >= 3) {
+                this.lambdaUpdate().eq(WmNews::getId, newsId)
+                        .set(WmNews::getType, WemediaConstants.WM_NEWS_MANY_IMAGE)
+                        .set(WmNews::getImages, String.join(",", images))
                         .update();
-            }else if(contentImages.size() >= 1){
+            } else if (contentImages.size() >= 1) {
                 //单图
                 images = contentImages.stream().limit(1).collect(Collectors.toList());
-                this.lambdaUpdate().eq(WmNews::getId,newsId)
-                        .set(WmNews::getType,WemediaConstants.WM_NEWS_SINGLE_IMAGE)
-                        .set(WmNews::getImages,String.join(",",images))
+                this.lambdaUpdate().eq(WmNews::getId, newsId)
+                        .set(WmNews::getType, WemediaConstants.WM_NEWS_SINGLE_IMAGE)
+                        .set(WmNews::getImages, String.join(",", images))
                         .update();
-            }else {
+            } else {
                 //无图
-                this.lambdaUpdate().eq(WmNews::getId,newsId)
-                        .set(WmNews::getType,WemediaConstants.WM_NEWS_NONE_IMAGE)
+                this.lambdaUpdate().eq(WmNews::getId, newsId)
+                        .set(WmNews::getType, WemediaConstants.WM_NEWS_NONE_IMAGE)
                         .update();
             }
         }
@@ -197,7 +206,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         }
         // 根据图片url查询素材表
         List<WmMaterial> wmMaterials = wmMaterialService.listMaterialsByUrl(images);
-        if (wmMaterials.size() != images.size()){
+        if (wmMaterials.size() != images.size()) {
             // 有图片不存在,抛出异常进行数据回滚
             throw new CustomException(AppHttpCodeEnum.MATERIAL_REFERENCE_FAIL);
         }
@@ -215,7 +224,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
     }
 
     private boolean updateNews(WmNews wmNews) {
-        if (WmNews.Status.SUBMIT.getCode().equals(wmNews.getStatus())){
+        if (WmNews.Status.SUBMIT.getCode().equals(wmNews.getStatus())) {
             wmNews.setSubmitedTime(LocalDateTime.now());
         }
         // 保存并删除文章图片与素材的关系
@@ -228,7 +237,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         // 设置默认值
         wmNews.setEnable(1);
         wmNews.setUserId(WmThreadLocalUtil.getUser().getId());
-        if(WmNews.Status.SUBMIT.getCode().equals(wmNews.getStatus())){
+        if (WmNews.Status.SUBMIT.getCode().equals(wmNews.getStatus())) {
             wmNews.setSubmitedTime(LocalDateTime.now());
         }
         return this.save(wmNews);

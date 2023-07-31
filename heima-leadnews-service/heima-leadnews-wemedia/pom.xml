@@ -21,5 +21,11 @@
             <artifactId>heima-file-starter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-dfa</artifactId>
+            <version>5.8.15</version>
+        </dependency>
+
     </dependencies>
 </project>

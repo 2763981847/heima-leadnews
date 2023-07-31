@@ -69,8 +69,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="WmNewsMaterial" />
-                  <option name="tableName" value="wm_news_material" />
+                  <option name="className" value="WmSensitive" />
+                  <option name="tableName" value="wm_sensitive" />
                 </TableUIInfo>
               </list>
             </option>
