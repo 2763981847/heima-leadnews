@@ -1,0 +1,13 @@
+server:
+  port: 51701
+spring:
+  application:
+    name: leadnews-schedule
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${VPS_HOST}:8848
+      config:
+        server-addr: ${VPS_HOST}:8848
+        file-extension: yaml
+        group: leadnews

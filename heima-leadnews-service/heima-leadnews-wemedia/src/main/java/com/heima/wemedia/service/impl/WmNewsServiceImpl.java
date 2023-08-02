@@ -1,5 +1,6 @@
 package com.heima.wemedia.service.impl;
 
+
 import java.time.LocalDate;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -7,32 +8,38 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.api.schedule.ScheduleClient;
 import com.heima.common.constants.WemediaConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.model.common.dto.PageResponseResult;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.common.enums.TaskTypeEnum;
+import com.heima.model.schedule.dto.Task;
 import com.heima.model.wemedia.dto.WmNewsDto;
 import com.heima.model.wemedia.dto.WmNewsPageReqDto;
 import com.heima.model.wemedia.dto.WmNewsUpDownDto;
 import com.heima.model.wemedia.entity.WmMaterial;
 import com.heima.model.wemedia.entity.WmNews;
 import com.heima.model.wemedia.entity.WmNewsMaterial;
+import com.heima.util.common.ProtostuffUtil;
 import com.heima.util.thread.WmThreadLocalUtil;
 import com.heima.wemedia.service.WmMaterialService;
 import com.heima.wemedia.service.WmNewsAutoScanService;
 import com.heima.wemedia.service.WmNewsMaterialService;
 import com.heima.wemedia.service.WmNewsService;
 import com.heima.wemedia.mapper.WmNewsMapper;
-import net.bytebuddy.implementation.bytecode.Throw;
-import net.sourceforge.tess4j.Tesseract;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,9 +59,13 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
     @Resource
     private WmMaterialService wmMaterialService;
 
+    @Resource
+    @Lazy
+    private WmNewsAutoScanService wmNewsAutoScanService;
+
 
     @Resource
-    private WmNewsAutoScanService wmNewsAutoScanService;
+    private ScheduleClient scheduleClient;
 
     @Override
     public ResponseResult<List<WmNews>> listNews(WmNewsPageReqDto wmNewsPageReqDto) {
@@ -107,8 +118,9 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         }
         // 不是草稿，保存文章图片与素材的关系后返回
         ResponseResult<?> responseResult = saveRelations(dto, wmNews.getId());
-        // 调用自动审核
-        wmNewsAutoScanService.autoScanWmNews(wmNews.getId());
+        // 添加到自动审核任务
+//         wmNewsAutoScanService.autoScanWmNews(wmNews.getId());
+        addNewsToTask(wmNews.getId(), wmNews.getPublishTime());
         return responseResult;
     }
 
@@ -241,6 +253,34 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
             wmNews.setSubmitedTime(LocalDateTime.now());
         }
         return this.save(wmNews);
+    }
+
+
+    @Async
+    public void addNewsToTask(Integer id, LocalDateTime publishTime) {
+        // 添加定时任务
+        Task task = new Task();
+        task.setTaskType(TaskTypeEnum.NEWS_SCAN_TIME.getTaskType());
+        task.setPriority(TaskTypeEnum.NEWS_SCAN_TIME.getPriority());
+        task.setExecuteTime(publishTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        WmNews wmNews = new WmNews();
+        wmNews.setId(id);
+        task.setParameters(ProtostuffUtil.serialize(wmNews));
+        scheduleClient.addTask(task);
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void scanNewsFromTask() {
+        ResponseResult<Task> responseResult = scheduleClient.poll(TaskTypeEnum.NEWS_SCAN_TIME.getTaskType(), TaskTypeEnum.NEWS_SCAN_TIME.getPriority());
+        if (responseResult == null || responseResult.getCode() != AppHttpCodeEnum.SUCCESS.getCode()) {
+            return;
+        }
+        Task task = responseResult.getData();
+        if (task == null || StringUtils.isEmpty(task.getParameters())) {
+            return;
+        }
+        WmNews wmNews = ProtostuffUtil.deserialize(task.getParameters(), WmNews.class);
+        wmNewsAutoScanService.autoScanWmNews(wmNews.getId());
     }
 }
 

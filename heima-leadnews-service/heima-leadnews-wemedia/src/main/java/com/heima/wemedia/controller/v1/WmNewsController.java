@@ -1,6 +1,5 @@
 package com.heima.wemedia.controller.v1;
 
-import com.heima.model.common.dto.PageResponseResult;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dto.WmNewsDto;
