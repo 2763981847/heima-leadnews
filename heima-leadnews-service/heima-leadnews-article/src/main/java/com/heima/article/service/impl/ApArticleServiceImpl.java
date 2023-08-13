@@ -15,6 +15,7 @@ import com.heima.model.article.entity.ApArticleConfig;
 import com.heima.model.article.entity.ApArticleContent;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,8 +71,7 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
             loadType = ArticleConstants.LOAD_MORE;
         }
         // 2.根据参数查询文章列表
-        List<ApArticle> apArticles = baseMapper.loadArticleList(dto, loadType);
-        return apArticles;
+        return baseMapper.loadArticleList(dto, loadType);
     }
 
     @Override

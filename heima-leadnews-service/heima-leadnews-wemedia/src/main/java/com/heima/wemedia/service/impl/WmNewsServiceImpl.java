@@ -9,8 +9,11 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.api.schedule.ScheduleClient;
+import com.heima.common.config.RabbitConfig;
 import com.heima.common.constants.WemediaConstants;
+import com.heima.common.constants.WmNewsMessageConstants;
 import com.heima.common.exception.CustomException;
+import com.heima.model.article.dto.ArticleConfigUpDownDto;
 import com.heima.model.common.dto.PageResponseResult;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
@@ -29,7 +32,11 @@ import com.heima.wemedia.service.WmNewsAutoScanService;
 import com.heima.wemedia.service.WmNewsMaterialService;
 import com.heima.wemedia.service.WmNewsService;
 import com.heima.wemedia.mapper.WmNewsMapper;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -66,6 +73,7 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
 
     @Resource
     private ScheduleClient scheduleClient;
+    private Message message;
 
     @Override
     public ResponseResult<List<WmNews>> listNews(WmNewsPageReqDto wmNewsPageReqDto) {
@@ -149,6 +157,10 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+
     @Override
     public ResponseResult<?> downOrUp(WmNewsUpDownDto wmNewsUpDownDto) {
         Integer id = wmNewsUpDownDto.getId();
@@ -168,8 +180,18 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
                 .eq(WmNews::getId, id)
                 .set(WmNews::getStatus, wmNewsUpDownDto.getEnable())
                 .update();
-        return success ? ResponseResult.okResult(AppHttpCodeEnum.SUCCESS) :
-                ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR);
+        if (!success) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR);
+        }
+        // 发送消息到rabbit
+        ArticleConfigUpDownDto articleConfigUpDownDto = new ArticleConfigUpDownDto();
+        articleConfigUpDownDto.setArticleId(wmNews.getArticleId());
+        articleConfigUpDownDto.setIsDown(wmNewsUpDownDto.getEnable() == 1 ? 0 : 1);
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.LEADNEWS_TOPIC_EXCHANGE,
+                WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN,
+                JSON.toJSONString(articleConfigUpDownDto));
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
     private ResponseResult<?> saveRelations(WmNewsDto dto, Integer newsId) {
