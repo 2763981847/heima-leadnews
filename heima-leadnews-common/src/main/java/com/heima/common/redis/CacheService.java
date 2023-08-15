@@ -1175,6 +1175,17 @@ public class CacheService extends CachingConfigurerSupport {
 
     }
 
+    /**
+     * 获取集合的元素, 从大到小排序
+     *
+     * @param key
+     * @return
+     */
+    public Set<String> zReverseRangeAll(String key) {
+        return stringRedisTemplate.opsForZSet().reverseRange(key, 0, -1);
+
+    }
+
     public Set<String> zReverseRangeByScore(String key, long min, long max) {
         return stringRedisTemplate.opsForZSet().reverseRangeByScore(key, min, max);
 

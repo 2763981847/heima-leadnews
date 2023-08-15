@@ -2,11 +2,17 @@ package com.heima.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.heima.common.constants.ArticleConstants;
+import com.heima.common.constants.SearchConstants;
+import com.heima.common.redis.CacheService;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.search.dto.ApUserSearch;
+import com.heima.model.search.dto.HistorySearchDto;
 import com.heima.model.search.dto.UserSearchDto;
 import com.heima.model.search.vo.SearchArticleVo;
+import com.heima.model.user.entity.ApUser;
 import com.heima.search.service.ArticleSearchService;
+import com.heima.util.thread.AppThreadLocalUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.index.IndexRequest;
@@ -22,13 +28,13 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import sun.util.resources.LocaleData;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -49,6 +55,11 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         //1.检查参数
         if (dto == null || StringUtils.isBlank(dto.getSearchWords())) {
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+
+        if (AppThreadLocalUtil.getUser() != null && dto.getFromIndex() == 0) {
+            // 异步调用保存搜索记录
+            insertHistory(dto.getSearchWords(), AppThreadLocalUtil.getUser().getId());
         }
 
         //2.设置查询条件
@@ -109,6 +120,23 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         return ResponseResult.okResult(list);
     }
 
+    @Resource
+    private CacheService cacheService;
+
+    @Override
+    @Async
+    public void insertHistory(String keyWord, Integer userId) {
+        if (StringUtils.isBlank(keyWord) || userId == null) {
+            return;
+        }
+        String key = SearchConstants.HISTORY + userId;
+        cacheService.zAdd(key, keyWord, System.currentTimeMillis());
+        Long size = cacheService.zZCard(key);
+        if (size > 10) {
+            cacheService.zRemoveRange(key, 0, size - 11);
+        }
+    }
+
 
     @RabbitListener(queues = ArticleConstants.ARTICLE_ES_SYNC)
     public void syncArticleListener(String message) throws IOException {
@@ -121,5 +149,30 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         indexRequest.id(searchArticleVo.getId().toString())
                 .source(message, XContentType.JSON);
         restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+    }
+
+    @Override
+    public ResponseResult<?> listSearchHistory() {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        String key = SearchConstants.HISTORY + user.getId();
+        Set<String> keyWords = cacheService.zReverseRangeAll(key);
+        return ResponseResult.okResult(keyWords
+                .stream()
+                .map(ApUserSearch::new)
+                .toArray());
+    }
+
+    @Override
+    public ResponseResult<?> removeSearchHistory(HistorySearchDto historySearchDto) {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        String key = SearchConstants.HISTORY + user.getId();
+        cacheService.zRemove(key, historySearchDto.getId());
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 }

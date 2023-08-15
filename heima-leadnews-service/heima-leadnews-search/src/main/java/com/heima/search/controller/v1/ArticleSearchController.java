@@ -25,4 +25,6 @@ public class ArticleSearchController {
     public ResponseResult<?> search(@RequestBody UserSearchDto dto) throws IOException {
         return articleSearchService.search(dto);
     }
+
+
 }
