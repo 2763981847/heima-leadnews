@@ -11,8 +11,8 @@ import com.heima.model.user.entity.ApUser;
 import com.heima.model.user.vo.LoginUserVo;
 import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
-import com.heima.user.util.UserUtils;
 import com.heima.util.common.AppJwtUtil;
+import com.heima.util.common.LoginUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser>
         // 校验密码
         String salt = apUser.getSalt();
         String encryptedPassword = apUser.getPassword();
-        if (!UserUtils.getEncryptPassword(password, salt).equals(encryptedPassword)) {
+        if (!LoginUtils.getEncryptPassword(password, salt).equals(encryptedPassword)) {
             // 密码错误
             return ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
         }

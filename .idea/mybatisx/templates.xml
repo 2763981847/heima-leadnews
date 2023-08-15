@@ -6,7 +6,7 @@
         <option name="generateConfig">
           <GenerateConfig>
             <option name="annotationType" value="MYBATIS_PLUS3" />
-            <option name="basePackage" value="com.heima.model.schedule" />
+            <option name="basePackage" value="com.heima.model.admin" />
             <option name="basePath" value="src/main/java" />
             <option name="classNameStrategy" value="camel" />
             <option name="encoding" value="UTF-8" />
@@ -27,8 +27,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Mapper" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-schedule" />
-                  <option name="packageName" value="com.heima.schedule.mapper" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-admin" />
+                  <option name="packageName" value="com.heima.admin.mapper" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
                   <option name="basePath" value="src/main/resources" />
@@ -37,7 +37,7 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Mapper" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Mapper.xml" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-schedule" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-admin" />
                   <option name="packageName" value="mapper" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
@@ -47,8 +47,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}ServiceImpl" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}ServiceImpl.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-schedule" />
-                  <option name="packageName" value="com.heima.schedule.service.impl" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-admin" />
+                  <option name="packageName" value="com.heima.admin.service.impl" />
                 </ModuleInfoGo>
                 <ModuleInfoGo>
                   <option name="basePath" value="${domain.basePath}" />
@@ -57,8 +57,8 @@
                   <option name="encoding" value="${domain.encoding}" />
                   <option name="fileName" value="${domain.fileName}Service" />
                   <option name="fileNameWithSuffix" value="${domain.fileName}Service.java" />
-                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-schedule" />
-                  <option name="packageName" value="com.heima.schedule.service" />
+                  <option name="modulePath" value="$PROJECT_DIR$/heima-leadnews-service/heima-leadnews-admin" />
+                  <option name="packageName" value="com.heima.admin.service" />
                 </ModuleInfoGo>
               </list>
             </option>
@@ -69,12 +69,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="TaskinfoLogs" />
-                  <option name="tableName" value="taskinfo_logs" />
-                </TableUIInfo>
-                <TableUIInfo>
-                  <option name="className" value="Taskinfo" />
-                  <option name="tableName" value="taskinfo" />
+                  <option name="className" value="AdUser" />
+                  <option name="tableName" value="ad_user" />
                 </TableUIInfo>
               </list>
             </option>
