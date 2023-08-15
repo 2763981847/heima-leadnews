@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataSource name="@autumnclouds.cn">
   <database-model serializer="dbm" dbms="MYSQL" family-id="MYSQL" format-version="4.49">
-    <root id="1"/>
+    <root id="1">
+      <DefaultEngine>InnoDB</DefaultEngine>
+      <DefaultTmpEngine>InnoDB</DefaultTmpEngine>
+      <ServerVersion>5.7.39</ServerVersion>
+    </root>
     <collation id="2" parent="1" name="big5_chinese_ci">
       <Charset>big5</Charset>
       <DefaultForCharset>1</DefaultForCharset>
@@ -773,6 +777,8 @@
       <CollationName>utf8mb4_general_ci</CollationName>
     </schema>
     <schema id="245" parent="1" name="leadnews_article">
+      <IntrospectionTimestamp>2023-08-15.03:33:03</IntrospectionTimestamp>
+      <LocalIntrospectionTimestamp>2023-08-14.11:33:01</LocalIntrospectionTimestamp>
       <CollationName>utf8mb4_unicode_ci</CollationName>
     </schema>
     <schema id="246" parent="1" name="leadnews_wemedia">
@@ -1232,7 +1238,7 @@ DYNAMIC</Options>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="334" parent="270" name="id">
-      <AutoIncrement>1686016667462799363</AutoIncrement>
+      <AutoIncrement>1686625048456204291</AutoIncrement>
       <DasType>bigint(20) unsigned|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
@@ -1363,7 +1369,7 @@ DYNAMIC</Options>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="358" parent="271" name="id">
-      <AutoIncrement>1686016667768983555</AutoIncrement>
+      <AutoIncrement>1686625048720445442</AutoIncrement>
       <Comment>主键</Comment>
       <DasType>bigint(20) unsigned|0s</DasType>
       <NotNull>1</NotNull>
@@ -1409,7 +1415,7 @@ DYNAMIC</Options>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="367" parent="272" name="id">
-      <AutoIncrement>1686016668020641794</AutoIncrement>
+      <AutoIncrement>1686625048913383426</AutoIncrement>
       <Comment>主键</Comment>
       <DasType>bigint(20) unsigned|0s</DasType>
       <NotNull>1</NotNull>

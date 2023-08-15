@@ -1,22 +1,31 @@
 package com.heima.article.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.heima.article.service.ApArticleFreemarkerService;
 import com.heima.article.service.ApArticleService;
+import com.heima.common.config.RabbitConfig;
+import com.heima.common.constants.ArticleConstants;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.article.entity.ApArticle;
 import com.heima.model.article.entity.ApArticleContent;
+import com.heima.model.search.vo.SearchArticleVo;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.xml.crypto.Data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.sql.Date;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +66,23 @@ public class ApArticleFreemarkerServiceImpl implements ApArticleFreemarkerServic
         apArticleService.lambdaUpdate().eq(ApArticle::getId, apArticle.getId())
                 .set(ApArticle::getStaticUrl, url)
                 .update();
+
+        //4.发送消息，创建ES索引
+        createArticleESIndex(apArticle, content, url);
+    }
+
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+
+    private void createArticleESIndex(ApArticle apArticle, String content, String url) {
+        SearchArticleVo searchArticleVo = BeanUtil.copyProperties(apArticle, SearchArticleVo.class);
+        searchArticleVo.setPublishTime(Date.valueOf(apArticle.getPublishTime().toLocalDate()));
+        searchArticleVo.setContent(content);
+        searchArticleVo.setStaticUrl(url);
+        rabbitTemplate.convertAndSend(
+                RabbitConfig.LEADNEWS_TOPIC_EXCHANGE,
+                ArticleConstants.ARTICLE_ES_SYNC,
+                JSON.toJSONString(searchArticleVo));
     }
 }
 

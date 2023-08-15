@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import lombok.Data;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 /**
  * APP用户信息表

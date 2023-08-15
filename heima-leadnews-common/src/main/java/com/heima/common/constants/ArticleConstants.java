@@ -12,4 +12,13 @@ public class ArticleConstants {
     public static final int DEFAULT_PAGE_SIZE = 10;
 
     public static final int MAX_PAGE_SIZE = 50;
+
+
+    public static final String ARTICLE_ES_SYNC = "articleEsSync";
+
+    public static final Integer HOT_ARTICLE_LIKE_WEIGHT = 3;
+    public static final Integer HOT_ARTICLE_COMMENT_WEIGHT = 5;
+    public static final Integer HOT_ARTICLE_COLLECTION_WEIGHT = 8;
+
+    public static final String HOT_ARTICLE_FIRST_PAGE = "hot_article_first_page_";
 }

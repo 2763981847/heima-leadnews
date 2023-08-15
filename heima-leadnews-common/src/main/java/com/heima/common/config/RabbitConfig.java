@@ -1,5 +1,6 @@
 package com.heima.common.config;
 
+import com.heima.common.constants.ArticleConstants;
 import com.heima.common.constants.WmNewsMessageConstants;
 import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,13 @@ public class RabbitConfig {
                 .build();
     }
 
+    @Bean
+    public Queue articleEsSyncQueue() {
+        return QueueBuilder
+                .durable(ArticleConstants.ARTICLE_ES_SYNC)
+                .build();
+    }
+
     //交换机绑定队列
     @Bean
     public Binding bindMessageQueue() {
@@ -38,6 +46,15 @@ public class RabbitConfig {
                 .bind(wmNewsQueue())
                 .to(topicExchange())
                 .with(WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN)
+                .noargs();
+    }
+
+    @Bean
+    public Binding bindArticleEsQueue() {
+        return BindingBuilder
+                .bind(articleEsSyncQueue())
+                .to(topicExchange())
+                .with(ArticleConstants.ARTICLE_ES_SYNC)
                 .noargs();
     }
 }

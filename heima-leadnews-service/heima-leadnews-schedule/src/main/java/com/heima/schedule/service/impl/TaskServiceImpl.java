@@ -102,20 +102,18 @@ public class TaskServiceImpl implements TaskService {
         clearTaskInRedis();
         // 查询小于未来5分钟的所有任务
         List<Taskinfo> taskinfos = taskinfoService.lambdaQuery()
-                .lt(Taskinfo::getExecuteTime, LocalDateTime.now().plus(5, ChronoUnit.MINUTES))
+                .lt(Taskinfo::getExecuteTime, LocalDateTime.now().plusMinutes(5))
                 .list();
-        if (CollectionUtils.isEmpty(taskinfos)) {
-            return;
-        }
-        // 将任务保存到Redis
-        taskinfos.forEach(taskinfo -> {
-            Task task = BeanUtil.copyProperties(taskinfo, Task.class);
-            task.setExecuteTime(taskinfo.getExecuteTime()
-                    .atZone(ZoneId.systemDefault())
-                    .toInstant()
-                    .toEpochMilli());
-            saveTaskToRedis(task);
-        });
+        if (!CollectionUtils.isEmpty(taskinfos))
+            // 将任务保存到Redis
+            taskinfos.forEach(taskinfo -> {
+                Task task = BeanUtil.copyProperties(taskinfo, Task.class);
+                task.setExecuteTime(taskinfo.getExecuteTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli());
+                saveTaskToRedis(task);
+            });
     }
 
     private void clearTaskInRedis() {

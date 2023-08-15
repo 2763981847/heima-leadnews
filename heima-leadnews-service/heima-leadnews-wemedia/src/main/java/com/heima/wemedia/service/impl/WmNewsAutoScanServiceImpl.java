@@ -96,7 +96,6 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             this.updateScanInfo(wmNews.getId(), WmNews.Status.PUBLISHED, "审核通过");
         }
     }
-
     private boolean handleSensitiveScan(WmNews wmNews, String text) {
         List<String> sensitives = wmSensitiveService.lambdaQuery()
                 .select(WmSensitive::getSensitives)
