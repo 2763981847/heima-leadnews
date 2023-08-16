@@ -764,6 +764,12 @@ public class CacheService extends CachingConfigurerSupport {
         return stringRedisTemplate.opsForSet().add(key, values);
     }
 
+    public Long sAdd(String key, Object... values) {
+        return stringRedisTemplate
+                .opsForSet()
+                .add(key, Arrays.stream(values).map(JSON::toJSONString).toArray(String[]::new));
+    }
+
     /**
      * set移除元素
      *

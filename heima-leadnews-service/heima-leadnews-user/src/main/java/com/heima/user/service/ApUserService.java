@@ -1,6 +1,7 @@
 package com.heima.user.service;
 
 import com.heima.model.common.dto.ResponseResult;
+import com.heima.model.user.UserRelationDto;
 import com.heima.model.user.dto.LoginDto;
 import com.heima.model.user.entity.ApUser;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -14,4 +15,5 @@ public interface ApUserService extends IService<ApUser> {
 
     ResponseResult<?> login(LoginDto loginDto);
 
+    ResponseResult<?> follow(UserRelationDto userRelationDto);
 }

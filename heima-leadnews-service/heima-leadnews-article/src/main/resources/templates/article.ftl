@@ -30,7 +30,8 @@
             </van-col>
             <van-col span="5">
                 <van-button round :icon="relation.isfollow ? '' : 'plus'" type="info" class="article-focus"
-                            :text="relation.isfollow ? '取消关注' : '关注'" :loading="followLoading" @click="handleClickArticleFollow">
+                            :text="relation.isfollow ? '取消关注' : '关注'" :loading="followLoading"
+                            @click="handleClickArticleFollow">
                 </van-button>
             </van-col>
         </van-row>
@@ -52,18 +53,22 @@
         <van-row type="flex" justify="center" class="article-action">
             <van-col>
                 <van-button round :icon="relation.islike ? 'good-job' : 'good-job-o'" class="article-like"
-                            :loading="likeLoading" :text="relation.islike ? '取消赞' : '点赞'" @click="handleClickArticleLike"></van-button>
+                            :loading="likeLoading" :text="relation.islike ? '取消赞' : '点赞'"
+                            @click="handleClickArticleLike"></van-button>
                 <van-button round :icon="relation.isunlike ? 'delete' : 'delete-o'" class="article-unlike"
-                            :loading="unlikeLoading" @click="handleClickArticleUnlike">不喜欢</van-button>
+                            11 :loading="unlikeLoading" @click="handleClickArticleUnlike">不喜欢
+                </van-button>
             </van-col>
         </van-row>
 
         <!-- 文章评论列表 -->
         <van-list v-model="commentsLoading" :finished="commentsFinished" finished-text="没有更多了"
                   @load="onLoadArticleComments">
-            <van-row id="#comment-view" type="flex" class="article-comment" v-for="(item, index) in comments" :key="index">
+            <van-row id="#comment-view" type="flex" class="article-comment" v-for="(item, index) in comments"
+                     :key="index">
                 <van-col span="3">
-                    <van-image round src="https://p3.pstatp.com/thumb/1480/7186611868" class="article-avatar"></van-image>
+                    <van-image round src="https://p3.pstatp.com/thumb/1480/7186611868"
+                               class="article-avatar"></van-image>
                 </van-col>
                 <van-col span="21">
                     <van-row type="flex" align="center" justify="space-between">
@@ -83,8 +88,9 @@
                             {{ item.createdTime | timestampToDateTime }}
                         </van-col>
                         <van-col span="3">
-                            <van-button round size="normal" v-html="item.reply" @click="showCommentRepliesPopup(item.id)">回复 {{
-                                item.reply || '' }}
+                            <van-button round size="normal" v-html="item.reply"
+                                        @click="showCommentRepliesPopup(item.id)">回复 {{
+                                    item.reply || '' }}
                             </van-button>
                         </van-col>
                     </van-row>
@@ -122,7 +128,8 @@
             <van-row id="#comment-reply-view" type="flex" class="article-comment-reply"
                      v-for="(item, index) in commentReplies" :key="index">
                 <van-col span="3">
-                    <van-image round src="https://p3.pstatp.com/thumb/1480/7186611868" class="article-avatar"></van-image>
+                    <van-image round src="https://p3.pstatp.com/thumb/1480/7186611868"
+                               class="article-avatar"></van-image>
                 </van-col>
                 <van-col span="21">
                     <van-row type="flex" align="center" justify="space-between">

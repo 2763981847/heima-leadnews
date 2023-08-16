@@ -6,15 +6,22 @@ import com.heima.article.service.ApArticleConfigService;
 import com.heima.article.service.ApArticleContentService;
 import com.heima.article.service.ApArticleFreemarkerService;
 import com.heima.common.constants.ArticleConstants;
+import com.heima.common.constants.BehaviorConstants;
+import com.heima.common.redis.CacheService;
 import com.heima.model.article.dto.ArticleDto;
 import com.heima.model.article.dto.ArticleHomeDto;
+import com.heima.model.article.dto.ArticleInfoDto;
 import com.heima.model.article.entity.ApArticle;
 import com.heima.article.service.ApArticleService;
 import com.heima.article.mapper.ApArticleMapper;
 import com.heima.model.article.entity.ApArticleConfig;
 import com.heima.model.article.entity.ApArticleContent;
+import com.heima.model.behavior.dto.CollectionBehaviorDto;
+import com.heima.model.behavior.vo.BehaviorInfoVo;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.entity.ApUser;
+import com.heima.util.thread.AppThreadLocalUtil;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +118,45 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         // 4.返回文章id
         return ResponseResult.okResult(apArticle.getId());
     }
+
+    @Resource
+    private CacheService cacheService;
+
+    @Override
+    public ResponseResult<?> collection(CollectionBehaviorDto collectionBehaviorDto) {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        Short operation = collectionBehaviorDto.getOperation();
+        Long articleId = collectionBehaviorDto.getEntryId();
+        String key = BehaviorConstants.COLLECTION + user.getId();
+        if (operation == 0) {
+            // 收藏
+            cacheService.sAdd(key, articleId.toString());
+        } else {
+            // 取消收藏
+            cacheService.sRemove(key, articleId.toString());
+        }
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public ResponseResult<?> loadArticleBehavior(ArticleInfoDto articleInfoDto) {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        Long articleId = articleInfoDto.getArticleId();
+        Integer authorId = articleInfoDto.getAuthorId();
+        BehaviorInfoVo behaviorInfoVo = new BehaviorInfoVo();
+        behaviorInfoVo.setIsLike(cacheService.sIsMember(BehaviorConstants.LIKE + user.getId(), articleId.toString()));
+        behaviorInfoVo.setIsUnlike(cacheService.sIsMember(BehaviorConstants.UNLIKE + user.getId(), articleId.toString()));
+        behaviorInfoVo.setIsCollection(cacheService.sIsMember(BehaviorConstants.COLLECTION + user.getId(), articleId.toString()));
+        behaviorInfoVo.setIsFollow(cacheService.sIsMember(BehaviorConstants.FOLLOW + user.getId(), authorId.toString()));
+        return ResponseResult.okResult(behaviorInfoVo);
+    }
+
 }
 
 

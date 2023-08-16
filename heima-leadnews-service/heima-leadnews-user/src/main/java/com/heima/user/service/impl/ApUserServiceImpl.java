@@ -4,8 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.common.constants.BehaviorConstants;
+import com.heima.common.redis.CacheService;
 import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
+import com.heima.model.user.UserRelationDto;
 import com.heima.model.user.dto.LoginDto;
 import com.heima.model.user.entity.ApUser;
 import com.heima.model.user.vo.LoginUserVo;
@@ -13,8 +16,10 @@ import com.heima.user.mapper.ApUserMapper;
 import com.heima.user.service.ApUserService;
 import com.heima.util.common.AppJwtUtil;
 import com.heima.util.common.LoginUtils;
+import com.heima.util.thread.AppThreadLocalUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +64,28 @@ public class ApUserServiceImpl extends ServiceImpl<ApUserMapper, ApUser>
         map.put("user", loginUserVo);
         map.put("token", AppJwtUtil.getToken(apUser.getId().longValue()));
         return ResponseResult.okResult(map);
+    }
+
+    @Resource
+    private CacheService cacheService;
+
+    @Override
+    public ResponseResult<?> follow(UserRelationDto userRelationDto) {
+        ApUser user = AppThreadLocalUtil.getUser();
+        if (user == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        String key = BehaviorConstants.FOLLOW + user.getId();
+        Short operation = userRelationDto.getOperation();
+        Integer authorId = userRelationDto.getAuthorId();
+        if (operation == 0) {
+            // 关注
+            cacheService.sAdd(key, authorId.toString());
+        } else {
+            // 取消关注
+            cacheService.sRemove(key, authorId.toString());
+        }
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 }
 
