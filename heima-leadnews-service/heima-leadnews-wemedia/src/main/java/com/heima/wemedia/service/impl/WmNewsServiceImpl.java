@@ -19,18 +19,17 @@ import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.common.enums.TaskTypeEnum;
 import com.heima.model.schedule.dto.Task;
+import com.heima.model.wemedia.dto.NewsAuthDto;
 import com.heima.model.wemedia.dto.WmNewsDto;
 import com.heima.model.wemedia.dto.WmNewsPageReqDto;
 import com.heima.model.wemedia.dto.WmNewsUpDownDto;
 import com.heima.model.wemedia.entity.WmMaterial;
 import com.heima.model.wemedia.entity.WmNews;
 import com.heima.model.wemedia.entity.WmNewsMaterial;
+import com.heima.model.wemedia.vo.WmNewsVo;
 import com.heima.util.common.ProtostuffUtil;
 import com.heima.util.thread.WmThreadLocalUtil;
-import com.heima.wemedia.service.WmMaterialService;
-import com.heima.wemedia.service.WmNewsAutoScanService;
-import com.heima.wemedia.service.WmNewsMaterialService;
-import com.heima.wemedia.service.WmNewsService;
+import com.heima.wemedia.service.*;
 import com.heima.wemedia.mapper.WmNewsMapper;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
@@ -192,6 +191,71 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews>
                 WmNewsMessageConstants.WM_NEWS_UP_OR_DOWN,
                 JSON.toJSONString(articleConfigUpDownDto));
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Resource
+    private WmUserService wmUserService;
+
+    @Override
+    public ResponseResult<?> listNewsVo(NewsAuthDto newsAuthDto) {
+        String title = newsAuthDto.getTitle();
+        Integer status = newsAuthDto.getStatus();
+        Page<WmNews> page = this.lambdaQuery()
+                .eq(status != null, WmNews::getStatus, status)
+                .like(StrUtil.isNotBlank(title), WmNews::getTitle, title)
+                .orderByDesc(WmNews::getCreatedTime)
+                .page(new Page<>(newsAuthDto.getPage(), newsAuthDto.getSize()));
+        return new PageResponseResult<>(
+                newsAuthDto.getPage(),
+                newsAuthDto.getSize(),
+                (int) page.getTotal(),
+                page.getRecords().stream()
+                        .map(wmNews -> setAuthorName(BeanUtil.copyProperties(wmNews, WmNewsVo.class)))
+                        .collect(Collectors.toList()));
+    }
+
+    @Override
+    public ResponseResult<?> getNewsVoById(Integer id) {
+        if (id == null || id < 1) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        WmNews wmNews = getById(id);
+        if (wmNews == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        WmNewsVo wmNewsVo = BeanUtil.copyProperties(wmNews, WmNewsVo.class);
+        return ResponseResult.okResult(setAuthorName(wmNewsVo));
+    }
+
+    @Override
+    public ResponseResult<?> authNews(NewsAuthDto newsAuthDto) {
+        Integer status = newsAuthDto.getStatus();
+        if (WmNews.Status.FAIL.getCode().equals(status.shortValue())) {
+            // 审核失败
+            this.updateScanInfo(newsAuthDto.getId(), WmNews.Status.FAIL, newsAuthDto.getMsg());
+            return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+        }
+        // 审核成功
+        WmNews wmNews = this.getById(newsAuthDto.getId());
+        wmNewsAutoScanService.saveApArticle(wmNews);
+        this.updateScanInfo(newsAuthDto.getId(), WmNews.Status.PUBLISHED, newsAuthDto.getMsg());
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    @Override
+    public void updateScanInfo(Integer newsId, WmNews.Status status, String reason) {
+        this.lambdaUpdate()
+                .eq(WmNews::getId, newsId)
+                .set(WmNews::getStatus, status.getCode())
+                .set(WmNews::getReason, reason)
+                .update();
+    }
+
+    private WmNewsVo setAuthorName(WmNewsVo wmNewsVo) {
+        Integer userId = wmNewsVo.getUserId();
+        String name = wmUserService.getById(userId).getName();
+        wmNewsVo.setAuthorName(name);
+        return wmNewsVo;
     }
 
     private ResponseResult<?> saveRelations(WmNewsDto dto, Integer newsId) {

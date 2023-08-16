@@ -93,9 +93,10 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             }
             //5.审核成功，保存app端的相关的文章数据
             this.saveApArticle(wmNews);
-            this.updateScanInfo(wmNews.getId(), WmNews.Status.PUBLISHED, "审核通过");
+            wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.PUBLISHED, "审核通过");
         }
     }
+
     private boolean handleSensitiveScan(WmNews wmNews, String text) {
         List<String> sensitives = wmSensitiveService.lambdaQuery()
                 .select(WmSensitive::getSensitives)
@@ -111,11 +112,13 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             return true;
         }
         // 匹配到敏感词,修改文章状态为自媒体审核失败
-        this.updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章中包含敏感词");
+        wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章中包含敏感词");
         return false;
     }
 
-    private void saveApArticle(WmNews wmNews) {
+    @Async
+    @Override
+    public void saveApArticle(WmNews wmNews) {
         ArticleDto articleDto = BeanUtil.copyProperties(wmNews, ArticleDto.class);
         articleDto.setId(wmNews.getArticleId());
         articleDto.setAuthorId(wmNews.getUserId());
@@ -171,11 +174,11 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             String suggestion = resultMap.get("suggestion");
             if ("block".equals(suggestion)) {
                 // 审核不通过
-                updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章存在违规图片");
+                wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章存在违规图片");
                 return false;
             } else if ("review".equals(suggestion)) {
                 // 不确定信息  需要人工审核
-                updateScanInfo(wmNews.getId(), WmNews.Status.ADMIN_AUTH, "文章存在不确定图片，需要人工审核");
+                wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.ADMIN_AUTH, "文章存在不确定图片，需要人工审核");
                 return false;
             }
         } catch (Exception e) {
@@ -196,11 +199,11 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
             String suggestion = resultMap.get("suggestion");
             if ("block".equals(suggestion)) {
                 // 审核不通过
-                updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章存在违规内容");
+                wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.FAIL, "文章存在违规内容");
                 return false;
             } else if ("review".equals(suggestion)) {
                 // 不确定信息  需要人工审核
-                updateScanInfo(wmNews.getId(), WmNews.Status.ADMIN_AUTH, "文章存在不确定内容，需要人工审核");
+                wmNewsService.updateScanInfo(wmNews.getId(), WmNews.Status.ADMIN_AUTH, "文章存在不确定内容，需要人工审核");
                 return false;
             }
         } catch (Exception e) {
@@ -210,13 +213,6 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
         return true;
     }
 
-    private void updateScanInfo(Integer newsId, WmNews.Status status, String reason) {
-        wmNewsService.lambdaUpdate()
-                .eq(WmNews::getId, newsId)
-                .set(WmNews::getStatus, status.getCode())
-                .set(WmNews::getReason, reason)
-                .update();
-    }
 
     private Map<String, Object> extractTextAndImage(WmNews wmNews) {
         String content = wmNews.getContent();

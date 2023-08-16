@@ -1,5 +1,7 @@
 package com.heima.wemedia.service;
 
+import com.heima.model.common.dto.ResponseResult;
+import com.heima.model.wemedia.dto.SensitiveDto;
 import com.heima.model.wemedia.entity.WmSensitive;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -10,4 +12,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface WmSensitiveService extends IService<WmSensitive> {
 
+    ResponseResult<?> listSensitiveWords(SensitiveDto sensitiveDto);
+
+    ResponseResult<?> saveSensitiveWord(WmSensitive wmSensitive);
+
+    ResponseResult<?> updateSensitiveWord(WmSensitive wmSensitive);
 }
