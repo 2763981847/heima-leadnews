@@ -5,6 +5,8 @@ package com.heima.common.constants;
  * @since 2023/7/26
  */
 public class ArticleConstants {
+
+    public static final String PREFIX = "leadnews:article:";
     public static final Short LOAD_MORE = 1;
     public static final Short LOAD_NEW = 2;
     public static final String DEFAULT_TAG = "__all__";
@@ -20,5 +22,5 @@ public class ArticleConstants {
     public static final Integer HOT_ARTICLE_COMMENT_WEIGHT = 5;
     public static final Integer HOT_ARTICLE_COLLECTION_WEIGHT = 8;
 
-    public static final String HOT_ARTICLE_FIRST_PAGE = "hot_article_first_page_";
+    public static final String HOT_ARTICLE = PREFIX + "hotArticle:";
 }

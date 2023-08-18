@@ -28,7 +28,8 @@ public class ArticleHomeController {
 
     @PostMapping("/load")
     public ResponseResult<?> load(@RequestBody ArticleHomeDto dto) {
-        List<ApArticle> apArticles = apArticleService.load(ArticleConstants.LOAD_MORE, dto);
+//        List<ApArticle> apArticles = apArticleService.load(ArticleConstants.LOAD_MORE, dto);
+        List<ApArticle> apArticles = apArticleService.load2(dto, ArticleConstants.LOAD_MORE, true);
         return ResponseResult.okResult(apArticles);
     }
 

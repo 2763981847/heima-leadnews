@@ -5,6 +5,7 @@ import com.heima.model.article.entity.ApArticle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -14,6 +15,9 @@ import java.util.List;
  * @Entity com.heima.model.article.entity.ApArticle
  */
 public interface ApArticleMapper extends BaseMapper<ApArticle> {
+
+    List<ApArticle> findArticleListByLast5days(@Param("dayParam") LocalDateTime dayParam);
+
     List<ApArticle> loadArticleList(@Param("dto") ArticleHomeDto dto, @Param("type") Short type);
 }
 

@@ -25,9 +25,20 @@ public interface ApArticleService extends IService<ApArticle> {
      */
     List<ApArticle> load(Short loadType, ArticleHomeDto dto);
 
+
     ResponseResult<?> saveArticle(ArticleDto dto);
 
     ResponseResult<?> collection(CollectionBehaviorDto collectionBehaviorDto);
 
     ResponseResult<?> loadArticleBehavior(ArticleInfoDto articleInfoDto);
+
+    /**
+     * 加载文章列表
+     *
+     * @param dto
+     * @param type      1 加载更多   2 加载最新
+     * @param firstPage true  是首页  flase 非首页
+     * @return
+     */
+    public List<ApArticle> load2(ArticleHomeDto dto, Short type, boolean firstPage);
 }

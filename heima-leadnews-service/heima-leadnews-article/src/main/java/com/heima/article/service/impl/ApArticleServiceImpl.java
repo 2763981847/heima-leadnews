@@ -1,6 +1,7 @@
 package com.heima.article.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.heima.article.service.ApArticleConfigService;
 import com.heima.article.service.ApArticleContentService;
@@ -22,7 +23,7 @@ import com.heima.model.common.dto.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.user.entity.ApUser;
 import com.heima.util.thread.AppThreadLocalUtil;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -155,6 +156,22 @@ public class ApArticleServiceImpl extends ServiceImpl<ApArticleMapper, ApArticle
         behaviorInfoVo.setIsCollection(cacheService.sIsMember(BehaviorConstants.COLLECTION + user.getId(), articleId.toString()));
         behaviorInfoVo.setIsFollow(cacheService.sIsMember(BehaviorConstants.FOLLOW + user.getId(), authorId.toString()));
         return ResponseResult.okResult(behaviorInfoVo);
+    }
+
+    @Override
+    public List<ApArticle> load2(ArticleHomeDto dto, Short type, boolean firstPage) {
+        if (!firstPage) {
+            // 不是首页，直接查询数据库
+            return load(type, dto);
+        }
+        // 是首页，先查询缓存
+        String jsonString = cacheService.get(ArticleConstants.HOT_ARTICLE + dto.getTag());
+        if (StringUtils.isBlank(jsonString)) {
+            // 缓存中没有，查询数据库
+            return load(type, dto);
+        }
+        // 缓存中有，直接返回
+        return JSON.parseArray(jsonString, ApArticle.class);
     }
 
 }
